@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reporte de Lotes Contables - V3.2.3.1</title>
+  <title>Reporte de Lotes Contables - V3.3 Online.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -1003,9 +1003,29 @@ async function readAuxWorkbook(file) {
   return out;
 }
 
-function loadDefault() {
-  Papa.parse(DEFAULT_CSV, {
-    header: true, skipEmptyLines: true,
+
+async function fetchTextIfExists(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`No disponible: ${url}`);
+  return await res.text();
+}
+
+async function fetchWorkbookIfExists(url) {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`No disponible: ${url}`);
+  const buf = await res.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const out = {};
+  wb.SheetNames.forEach(name => {
+    out[name] = XLSX.utils.sheet_to_json(wb.Sheets[name], {defval:''});
+  });
+  return out;
+}
+
+function parseAsinetCsvText(text) {
+  Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
     complete: res => {
       rawRows = res.data;
       rows = interpretRows(rawRows);
@@ -1013,6 +1033,46 @@ function loadDefault() {
       render();
     }
   });
+}
+
+async function loadDefault() {
+  // MODO ONLINE PARA GITHUB PAGES:
+  // Sube estos archivos al repositorio:
+  // /data/asinet.csv
+  // /data/auxiliar.xlsx
+  //
+  // Si esos archivos existen, todos los usuarios verán esa misma data al abrir la página.
+  // Si no existen, se usa la data de ejemplo incorporada.
+  try {
+    const asinetText = await fetchTextIfExists('data/asinet.csv');
+    parseAsinetCsvText(asinetText);
+    setUploadStatus('Data online cargada: data/asinet.csv');
+
+    try {
+      auxRawWorkbook = await fetchWorkbookIfExists('data/auxiliar.xlsx');
+      rebuildAuxRows(auxRawWorkbook);
+      render();
+      setAuxStatus('Data auxiliar online cargada: data/auxiliar.xlsx');
+    } catch (errAux) {
+      console.warn(errAux);
+      if (!auxRows.length && auxRawWorkbook) rebuildAuxRows(auxRawWorkbook);
+      render();
+      setAuxStatus('Sin auxiliar online. Puedes cargarlo manualmente.');
+    }
+
+  } catch (err) {
+    console.warn(err);
+    Papa.parse(DEFAULT_CSV, {
+      header: true, skipEmptyLines: true,
+      complete: res => {
+        rawRows = res.data;
+        rows = interpretRows(rawRows);
+        renderFilters();
+        render();
+        setUploadStatus('Data de ejemplo cargada. No se encontró data/asinet.csv');
+      }
+    });
+  }
 }
 
 async function readFile(file) {

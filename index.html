@@ -1068,12 +1068,12 @@ async function loadDefault() {
   // Si esos archivos existen, todos los usuarios verán esa misma data al abrir la página.
   // Si no existen, se usa la data de ejemplo incorporada.
   try {
-    const asinetText = await fetchTextIfExists('data/asinet.csv');
+    const asinetText = await fetchTextIfExists('/data/asinet.csv');
     parseAsinetCsvText(asinetText);
     setUploadStatus('Data online cargada: data/asinet.csv');
 
     try {
-      auxRawWorkbook = await fetchWorkbookIfExists('data/auxiliar.xlsx');
+      auxRawWorkbook = await fetchWorkbookIfExists('/data/auxiliar.xlsx');
       rebuildAuxRows(auxRawWorkbook);
       renderFilters();
       render();

@@ -1067,6 +1067,7 @@ async function loadDefault() {
   //
   // Si esos archivos existen, todos los usuarios verán esa misma data al abrir la página.
   // Si no existen, se usa la data de ejemplo incorporada.
+  alert("hola");
   try {
     const asinetText = await fetchTextIfExists('/data/asinet.csv');
     parseAsinetCsvText(asinetText);
@@ -1077,7 +1078,7 @@ async function loadDefault() {
       rebuildAuxRows(auxRawWorkbook);
       renderFilters();
       render();
-      setAuxStatus('Data auxiliar online cargada: data/auxiliar.xlsx');      
+      setAuxStatus('Data auxiliar online cargada: data/auxiliar.xlsx');
     } catch (errAux) {
       console.warn(errAux);
       if (!auxRows.length && auxRawWorkbook) rebuildAuxRows(auxRawWorkbook);

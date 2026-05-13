@@ -1069,7 +1069,7 @@ async function loadDefault() {
   // Si no existen, se usa la data de ejemplo incorporada.
   alert("hola");
   try {
-    const asinetText = await fetchTextIfExists('https://danielllaca1.github.io/TRABAJO/data/asinet.csv');
+    const DEFAULT_CSV = await fetchTextIfExists('https://danielllaca1.github.io/TRABAJO/data/asinet.csv');
     parseAsinetCsvText(asinetText);
     setUploadStatus('Data online cargada: data/asinet.csv');
 

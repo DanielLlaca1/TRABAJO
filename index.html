@@ -1069,12 +1069,12 @@ async function loadDefault() {
   // Si no existen, se usa la data de ejemplo incorporada.
   alert("hola");
   try {
-    const asinetText = await fetchTextIfExists('/data/asinet.csv');
+    const asinetText = await fetchTextIfExists('https://github.com/DanielLlaca1/data/asinet.csv');
     parseAsinetCsvText(asinetText);
     setUploadStatus('Data online cargada: data/asinet.csv');
 
     try {
-      auxRawWorkbook = await fetchWorkbookIfExists('/data/auxiliar.xlsx');
+      auxRawWorkbook = await fetchWorkbookIfExists('https://github.com/DanielLlaca1/data/auxiliar.xlsx');
       rebuildAuxRows(auxRawWorkbook);
       renderFilters();
       render();

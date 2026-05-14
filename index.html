@@ -110,12 +110,19 @@
       body { font-size: 12px; }
 
       /* ----- HEADER: NO TOCAR el fondo/padding del hero azul ----- */
-      /* El section del hero conserva su gradiente. Solo apretamos el logo. */
+      /* El section exterior del header tiene bg-slate-950 que se ve como un "marco negro"
+         en mobile. Lo hacemos transparente y sin padding para que solo se vea el brand-hero azul. */
+      main > section:first-of-type {
+        background: transparent !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      .brand-hero { padding: 0.9rem 1rem !important; border-radius: 1rem !important; }
       .brand-logo { width: 56px !important; height: 56px !important; }
       .brand-title { font-size: 1.05rem !important; line-height: 1.2 !important; }
       .brand-hero h2 { font-size: 0.85rem !important; line-height: 1.2 !important; }
       .brand-hero .text-xs { font-size: 9px !important; letter-spacing: 0.18em !important; }
-      .brand-hero { padding: 0.9rem 1rem !important; }
 
       /* ----- Tipografía general fuera del header ----- */
       main h2:not(.brand-hero h2) { font-size: 0.95rem !important; line-height: 1.15 !important; }
@@ -126,8 +133,7 @@
       .soft-card { border-radius: 0.9rem !important; }
       .rounded-3xl { border-radius: 0.9rem !important; }
       .rounded-2xl { border-radius: 0.7rem !important; }
-      /* IMPORTANTE: NO redefinimos la section del header (la primera) para que conserve su rounded-[2rem] */
-      main > section:first-of-type { padding: 0 !important; }
+      /* IMPORTANTE: la section del header (la primera) ya está exenta arriba. */
 
       /* Márgenes y gaps */
       .mt-6, .mt-7, .mt-8 { margin-top: 0.6rem !important; }
@@ -145,21 +151,101 @@
       .text-2xl { font-size: 1rem !important; line-height: 1.15 !important; }
       .text-xl  { font-size: 0.95rem !important; }
 
-      /* ----- Semáforo de aptitud: 2 columnas, MUY compacto ----- */
-      #aptCards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.4rem !important; }
-      #aptCards > div { padding: 0.45rem !important; }
-      #aptCards .apt-light-green, #aptCards .apt-light-red {
-        width: 38px !important; height: 38px !important;
+      /* ----- Semáforo de aptitud: 2 columnas, LAYOUT HORIZONTAL ultra compacto ----- */
+      #aptCards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.35rem !important; margin-top: 0.4rem !important; }
+
+      /* Cada card: layout flex con la luz a la izquierda y el contenido apilado a la derecha */
+      #aptCards > div {
+        padding: 0.45rem !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        flex-wrap: wrap !important;
       }
-      #aptCards .apt-light-green span, #aptCards .apt-light-red span { font-size: 18px !important; }
-      #aptCards h3 { font-size: 0.72rem !important; margin-top: 0.25rem !important; }
-      #aptCards .text-\[11px\] { font-size: 9px !important; }
+
+      /* La luz (primer hijo: el contenedor flex que centra el círculo) */
+      #aptCards > div > div:first-child {
+        margin: 0 !important;
+        flex: 0 0 auto !important;
+        align-self: center !important;
+      }
+      #aptCards .apt-light-green, #aptCards .apt-light-red {
+        width: 34px !important; height: 34px !important;
+      }
+      #aptCards .apt-light-green span, #aptCards .apt-light-red span { font-size: 16px !important; }
+
+      /* Contenedor a la derecha de la luz: nombre + pill */
+      #aptCards > div > h3 {
+        font-size: 0.78rem !important;
+        text-align: left !important;
+        margin: 0 !important;
+        line-height: 1.1 !important;
+        flex: 1 1 calc(100% - 44px) !important;
+        align-self: center !important;
+      }
+      /* Centro: pill APTO/NO APTO ocupa todo el ancho debajo del nombre */
+      #aptCards > div > .text-center {
+        text-align: left !important;
+        margin: 0 !important;
+        flex: 1 1 calc(100% - 44px) !important;
+      }
+      #aptCards .inline-block.rounded-full {
+        padding: 0.1rem 0.4rem !important;
+        font-size: 8.5px !important;
+        letter-spacing: 0.05em !important;
+      }
+
+      /* Ocultamos el subtítulo "Puede pagar y reponer" / "Debe regularizar" para ahorrar espacio */
+      #aptCards > div > p { display: none !important; }
+
+      /* La sección de problemas: ocupa todo el ancho debajo, sin border-top grueso */
+      #aptCards > div > .border-t {
+        flex: 1 1 100% !important;
+        margin-top: 0.3rem !important;
+        padding-top: 0.3rem !important;
+        border-top-width: 1px !important;
+      }
+      #aptCards .border-t > div { font-size: 9.5px !important; padding: 0 !important; line-height: 1.25 !important; }
+      #aptCards .border-t b { font-size: 11px !important; }
+      #aptCards .text-\[11px\] { font-size: 9.5px !important; }
       #aptCards .text-\[10px\] { font-size: 8.5px !important; }
-      #aptResumen { padding: 0.4rem 0.6rem !important; }
-      #aptResumen .text-3xl { font-size: 1.2rem !important; }
-      #aptResumen .text-\[10px\] { font-size: 8px !important; }
-      /* Reduce margen entre cabecera del semáforo y las cards */
-      #aptCards { margin-top: 0.4rem !important; }
+
+      /* ----- Header del semáforo más apretado ----- */
+      #aptResumen { padding: 0.35rem 0.55rem !important; }
+      #aptResumen .text-3xl { font-size: 1.1rem !important; }
+      #aptResumen .text-\[10px\] { font-size: 8px !important; letter-spacing: 0.12em !important; }
+      /* Apretar título del semáforo */
+      section[style*="linear-gradient(135deg, #0f172a"] h2 { font-size: 0.95rem !important; line-height: 1.15 !important; }
+      section[style*="linear-gradient(135deg, #0f172a"] > div:first-child > div:first-child > p { font-size: 10px !important; line-height: 1.2 !important; margin-top: 0.15rem !important; }
+      section[style*="linear-gradient(135deg, #0f172a"] > div:first-child { margin-bottom: 0.4rem !important; gap: 0.4rem !important; }
+      /* Criterios al pie: en una columna apretada */
+      section[style*="linear-gradient(135deg, #0f172a"] .flex.flex-wrap { gap: 0.3rem !important; margin-top: 0.5rem !important; }
+      section[style*="linear-gradient(135deg, #0f172a"] .flex.flex-wrap > span { font-size: 9px !important; padding: 0.15rem 0.4rem !important; }
+
+      /* ----- KPIs del auxiliar: forzar 2 columnas en mobile (estaba en 1) ----- */
+      section.aux-card > .grid.grid-cols-1.md\:grid-cols-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.4rem !important;
+        margin-top: 0.5rem !important;
+      }
+      section.aux-card > .grid.grid-cols-1.md\:grid-cols-4 > div {
+        padding: 0.5rem 0.65rem !important;
+        border-radius: 0.85rem !important;
+      }
+      section.aux-card > .grid.grid-cols-1.md\:grid-cols-4 > div > p:first-child {
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+      }
+      section.aux-card > .grid.grid-cols-1.md\:grid-cols-4 > div > p.text-4xl {
+        font-size: 1.3rem !important;
+        margin-top: 0.15rem !important;
+      }
+      /* Encabezado del bloque auxiliar más compacto */
+      section.aux-card h2 { font-size: 0.95rem !important; }
+      section.aux-card > div:first-child > div > p { font-size: 10.5px !important; line-height: 1.2 !important; margin-top: 0.15rem !important; }
+      section.aux-card > div:first-child .text-xs { font-size: 9px !important; letter-spacing: 0.15em !important; }
+      section.aux-card > div:first-child { margin-bottom: 0.3rem !important; }
 
       /* ----- Filtros: 2 columnas ----- */
       .filter-panel .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.35rem !important; }

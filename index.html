@@ -103,6 +103,79 @@
   
     th.sortable-aux { cursor:pointer; user-select:none; }
     th.sortable-aux:hover { color:#0f766e; background:#ecfeff; }
+
+    /* ====== VISTA MÓVIL COMPACTA (solo <= 640px) ====== */
+    @media (max-width: 640px) {
+      main { padding: 0.5rem !important; }
+
+      /* Tipografía general más chica */
+      body { font-size: 13px; }
+      h1, h2, h3 { line-height: 1.15 !important; }
+      h2 { font-size: 1.05rem !important; }
+      h3 { font-size: 0.95rem !important; }
+
+      /* Cards y secciones con menos padding y bordes más chicos */
+      section, .glass, .soft-card { padding: 0.75rem !important; border-radius: 1rem !important; }
+      .rounded-3xl, .rounded-\[2rem\] { border-radius: 1rem !important; }
+      .rounded-2xl { border-radius: 0.75rem !important; }
+
+      /* Reduce el margen entre secciones */
+      .mt-6, .mt-7, .mt-8 { margin-top: 0.75rem !important; }
+      .mb-4, .mb-5 { margin-bottom: 0.5rem !important; }
+      .gap-4, .gap-5 { gap: 0.5rem !important; }
+      .gap-3 { gap: 0.4rem !important; }
+      .p-5, .p-6, .p-7 { padding: 0.75rem !important; }
+
+      /* KPI numbers gigantes -> más manejables */
+      .text-4xl { font-size: 1.6rem !important; }
+      .text-3xl { font-size: 1.35rem !important; }
+      .text-2xl { font-size: 1.1rem !important; }
+      .text-xl  { font-size: 1rem !important; }
+
+      /* Header del dashboard */
+      header h1, .text-white\/95 { font-size: 1.05rem !important; }
+
+      /* Semáforo de aptitud: 2 columnas en celular en lugar de 1 */
+      #aptCards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.5rem !important; }
+      #aptCards > div { padding: 0.5rem !important; }
+      #aptCards .apt-light-green, #aptCards .apt-light-red {
+        width: 44px !important; height: 44px !important;
+      }
+      #aptCards .apt-light-green span, #aptCards .apt-light-red span { font-size: 22px !important; }
+      #aptCards h3 { font-size: 0.78rem !important; }
+      #aptCards .text-\[11px\] { font-size: 10px !important; }
+      #aptResumen { padding: 0.5rem 0.75rem !important; }
+      #aptResumen .text-3xl { font-size: 1.4rem !important; }
+
+      /* Filtros: 2 columnas en lugar de 5 */
+      .filter-panel .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 0.4rem !important; }
+      .filter-panel .rounded-2xl { padding: 0.5rem !important; }
+      .filter-label { font-size: 11px !important; }
+      .filter-control { font-size: 13px !important; padding: 0.35rem !important; }
+
+      /* Cards KPI superiores: 2 columnas en lugar de 4 */
+      section.grid.md\:grid-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+
+      /* Charts más bajos en móvil */
+      .chart-card, .chart-box { min-height: 200px; }
+      canvas { max-height: 240px !important; }
+
+      /* Tablas: scroll horizontal automático y celdas compactas */
+      table { font-size: 11px !important; }
+      table th, table td { padding: 0.4rem 0.45rem !important; }
+      .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+      /* Pills y badges */
+      .risk-pill { font-size: 10px !important; padding: 0.2rem 0.5rem !important; }
+      .rounded-full { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+
+      /* Header chips/badges del top */
+      .px-4.py-2 { padding: 0.3rem 0.6rem !important; font-size: 11px !important; }
+      .px-5.py-3 { padding: 0.4rem 0.7rem !important; }
+
+      /* Footer */
+      footer .text-\[11px\] { font-size: 10px !important; }
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-800">
@@ -118,7 +191,7 @@
               <h2 class="text-xl md:text-3xl font-extrabold mt-1 text-white/95">Reporte Online de Lotes Contables</h2>
             </div>
           </div>
-          <div class="relative z-[9999]">
+          <div class="relative z-[9999] hidden" data-upload-block>
             <button id="btnUploadMenu" class="inline-flex items-center gap-3 rounded-2xl bg-white text-slate-950 px-5 py-3 font-black shadow-xl hover:scale-[1.02] transition">
               <span class="text-xl">📤</span>
               <span>Cargar archivo</span>
@@ -328,7 +401,7 @@
                 <th class="p-3 sortable-aux" data-sort="usuario">Usuario ↕</th>
                 <th class="p-3 sortable-aux" data-sort="fecha">Fecha ↕</th>
                 <th class="p-3 sortable-aux" data-sort="voucher">Voucher auxiliar ↕</th>
-                <th class="p-3 sortable-aux" data-sort="lote">Lote ASINET ↕</th>
+                <th class="p-3 sortable-aux" data-sort="loteAasinet">Lote ASINET ↕</th>
                 <th class="p-3 sortable-aux" data-sort="estado">Estado auxiliar ↕</th>
                 <th class="p-3 text-right sortable-aux" data-sort="registros">Registros ↕</th>
               </tr>
@@ -338,6 +411,14 @@
         </div>
       </div>
     </section>
+
+    <footer class="mt-8 mb-4 px-2 text-center">
+      <p class="text-[11px] text-slate-400">
+        <span class="font-bold text-slate-500">Fuente de datos:</span>
+        <span id="footerSource" class="font-mono break-all">cargando…</span>
+      </p>
+      <p class="text-[10px] text-slate-400 mt-1">Dashboard AE-APC · Datos sincronizados desde GitHub</p>
+    </footer>
 
   </main>
 
@@ -1162,7 +1243,15 @@ function renderAux() {
   document.getElementById('auxAvance').textContent = avance.toFixed(1) + '%';
   drawAuxStatus(ok, sinSust, noEnv);
   drawAuxSchool(data);
-  drawAuxTable(data.filter(r=>r.riesgo !== 'OK').sort((a,b)=>a.riesgoOrden-b.riesgoOrden || a.colegio.localeCompare(b.colegio)));
+  // Sort: si el usuario hizo clic en un header, respetar su elección.
+  // Si no, ordenar por defecto por riesgo + colegio.
+  let filtrados = data.filter(r => r.riesgo !== 'OK');
+  if (auxTableSort.key) {
+    filtrados = sortAuxRowsForTable(filtrados);
+  } else {
+    filtrados = filtrados.sort((a,b) => a.riesgoOrden - b.riesgoOrden || a.colegio.localeCompare(b.colegio));
+  }
+  drawAuxTable(filtrados);
 }
 
 function drawAuxStatus(ok, sinSust, noEnv) {
@@ -1397,7 +1486,8 @@ async function loadDefault() {
           rows = interpretRows(rawRows);
           renderFilters();
           render();
-          setUploadStatus(`Data online cargada: ${found.url}`);
+          setUploadStatus(`Data online cargada`);
+          setFooterSource(found.url);
           resolve();
         }
       });
@@ -1455,7 +1545,13 @@ document.addEventListener('click', e => {
 });
 
 function setUploadStatus(msg) {
-  document.getElementById('uploadStatus').textContent = msg;
+  const el = document.getElementById('uploadStatus');
+  if (el) el.textContent = msg;
+}
+
+function setFooterSource(url) {
+  const el = document.getElementById('footerSource');
+  if (el) el.textContent = url || '—';
 }
 
 function setAuxStatus(msg) {

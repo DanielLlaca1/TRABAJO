@@ -792,7 +792,8 @@ function fillSelect(id, values) {
   const el = document.getElementById(id);
   const current = el.value || 'Todos';
   el.innerHTML = values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
-  if (values.includes(current)) el.value = current;
+  // Si el valor actual ya no está disponible, vuelve a 'Todos' (que siempre está al inicio).
+  el.value = values.includes(current) ? current : 'Todos';
 }
 
 function getFiltered() {
@@ -810,14 +811,65 @@ function getFiltered() {
   );
 }
 
-function renderFilters() {
-  fillSelect('fSchool', unique([...rows.map(r=>r.colegio), ...auxRows.map(r=>r.colegio)]));
-  fillSelect('fUser', unique([...rows.map(r=>r.usuario), ...auxRows.map(r=>r.usuario)]));
-  fillSelect('fType', unique(rows.map(r=>r.type)));
+// --- Helpers para filtros encadenados ---
+// Devuelve las filas de ASINET filtradas por todos los selects EXCEPTO el indicado.
+function rowsExcludingFilter(exclude) {
+  const school = document.getElementById('fSchool').value;
+  const user = document.getElementById('fUser').value;
+  const type = document.getElementById('fType').value;
+  const month = document.getElementById('fMonth').value;
+  return rows.filter(r =>
+    (exclude === 'school' || school === 'Todos' || r.colegio === school) &&
+    (exclude === 'user' || user === 'Todos' || r.usuario === user) &&
+    (exclude === 'type' || type === 'Todos' || r.type === type) &&
+    (exclude === 'month' || month === 'Todos' || r.mesCreateLabel === month)
+  );
+}
 
+// Lo mismo para auxRows (aux no tiene 'type' equivalente, se ignora).
+function auxRowsExcludingFilter(exclude) {
+  const school = document.getElementById('fSchool').value;
+  const user = document.getElementById('fUser').value;
+  const month = document.getElementById('fMonth').value;
+  return auxRows.filter(r => {
+    const auxMonth = monthLabel(monthKeyFromDetectedDate(r.fecha));
+    return (exclude === 'school' || school === 'Todos' || r.colegio === school) &&
+           (exclude === 'user' || user === 'Todos' || r.usuario === user) &&
+           (exclude === 'month' || month === 'Todos' || auxMonth === month);
+  });
+}
+
+function renderFilters() {
+  // CASCADING FILTERS: cada select se llena con los valores disponibles
+  // considerando los OTROS filtros activos (no el suyo propio).
+  // Esto evita "lock-out" donde el usuario quedaría sin opciones para cambiar.
+
+  // Colegio: ve filas filtradas por usuario/tipo/mes (no por colegio).
+  const rowsForSchool = rowsExcludingFilter('school');
+  const auxRowsForSchool = auxRowsExcludingFilter('school');
+  fillSelect('fSchool', unique([
+    ...rowsForSchool.map(r => r.colegio),
+    ...auxRowsForSchool.map(r => r.colegio)
+  ]));
+
+  // Usuario: ve filas filtradas por colegio/tipo/mes (no por usuario).
+  const rowsForUser = rowsExcludingFilter('user');
+  const auxRowsForUser = auxRowsExcludingFilter('user');
+  fillSelect('fUser', unique([
+    ...rowsForUser.map(r => r.usuario),
+    ...auxRowsForUser.map(r => r.usuario)
+  ]));
+
+  // Tipo: solo ASINET. Filtrado por colegio/usuario/mes.
+  const rowsForType = rowsExcludingFilter('type');
+  fillSelect('fType', unique(rowsForType.map(r => r.type)));
+
+  // Mes: filtrado por colegio/usuario/tipo. Combina ASINET y aux.
+  const rowsForMonth = rowsExcludingFilter('month');
+  const auxRowsForMonth = auxRowsExcludingFilter('month');
   const monthKeys = new Set();
-  rows.forEach(r => { if (r.mesCreateKey) monthKeys.add(r.mesCreateKey); });
-  auxRows.forEach(r => {
+  rowsForMonth.forEach(r => { if (r.mesCreateKey) monthKeys.add(r.mesCreateKey); });
+  auxRowsForMonth.forEach(r => {
     const k = monthKeyFromDetectedDate(r.fecha);
     if (k) monthKeys.add(k);
   });
@@ -1709,7 +1761,15 @@ document.getElementById('auxFile').addEventListener('change', async e => {
   setUploadStatus(`Auxiliar cargado: ${file.name}`);
 });
 
-['fSchool','fUser','fType','fMonth','fText'].forEach(id => document.getElementById(id).addEventListener('input', render));
+// CASCADING: cuando cambia un SELECT, refresca los otros (para que sus opciones reflejen
+// solo lo disponible). Cuando cambia el TEXTO de glosa, solo re-renderiza (no toca selects).
+['fSchool','fUser','fType','fMonth'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    renderFilters();
+    render();
+  });
+});
+document.getElementById('fText').addEventListener('input', render);
 
 document.getElementById('btnDownload').addEventListener('click', () => {
   const bad = getFiltered().filter(r=>r.requiereSustento && !r.conSustento).map(r => ({
